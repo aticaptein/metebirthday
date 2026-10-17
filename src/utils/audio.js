@@ -149,33 +149,9 @@ class AudioManager {
     } catch {}
   }
 
-  // Gentle synth ambient pad (plays in background on user interaction)
+  // Continuous ambient is disabled per user request
   startAmbient() {
-    if (this.isPlayingAmbient || this.isMuted) return;
-    this.initContext();
-    if (!this.ctx) return;
-
-    try {
-      this.isPlayingAmbient = true;
-      const now = this.ctx.currentTime;
-      this.ambientGain = this.ctx.createGain();
-      this.ambientGain.gain.setValueAtTime(0.03, now);
-
-      this.ambientOsc1 = this.ctx.createOscillator();
-      this.ambientOsc1.type = 'sine';
-      this.ambientOsc1.frequency.setValueAtTime(110, now); // A2
-
-      this.ambientOsc2 = this.ctx.createOscillator();
-      this.ambientOsc2.type = 'triangle';
-      this.ambientOsc2.frequency.setValueAtTime(164.81, now); // E3
-
-      this.ambientOsc1.connect(this.ambientGain);
-      this.ambientOsc2.connect(this.ambientGain);
-      this.ambientGain.connect(this.ctx.destination);
-
-      this.ambientOsc1.start(now);
-      this.ambientOsc2.start(now);
-    } catch {}
+    // Disabled: keeping only button interaction sounds
   }
 }
 
