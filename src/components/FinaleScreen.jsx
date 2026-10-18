@@ -26,27 +26,24 @@ export const FinaleScreen = () => {
   };
 
   useEffect(() => {
-    // 1. Initial dark screen pause
-    const t1 = setTimeout(() => {
-      setPhase('spinning');
-    }, 400);
+    // Start spinning immediately on mount so there is never a flash of the card
+    setPhase('spinning');
 
-    // 2. Spin & Grow finishes around 2.8s
-    const t2 = setTimeout(() => {
-      setPhase('landed');
-      setBurstGlow(true);
-      triggerFinaleConfetti();
+    // Fallback timer (in case onAnimationEnd is not fired by browser)
+    const fallbackTimer = setTimeout(() => {
+      setPhase(prev => {
+        if (prev === 'spinning') {
+          setBurstGlow(true);
+          triggerFinaleConfetti();
+          setTimeout(() => setBurstGlow(false), 800);
+          return 'landed';
+        }
+        return prev;
+      });
     }, 3200);
 
-    // 3. Remove burst flash intensity after 800ms
-    const t3 = setTimeout(() => {
-      setBurstGlow(false);
-    }, 4000);
-
     return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
+      clearTimeout(fallbackTimer);
     };
   }, []);
 
@@ -70,8 +67,19 @@ export const FinaleScreen = () => {
     }));
   };
 
+  const handleSpinEnd = () => {
+    if (phase === 'spinning') {
+      setPhase('landed');
+      setBurstGlow(true);
+      triggerFinaleConfetti();
+      setTimeout(() => {
+        setBurstGlow(false);
+      }, 800);
+    }
+  };
+
   return (
-    <div className="finale-container">
+    <div className={`finale-container ${phase === 'landed' ? 'finale-ready' : ''}`}>
       {/* 3-Photo Compact Deck Gallery Container */}
       <div className="gallery-deck-container">
         {/* Left Photo (behind, exactly 20% visible peeking from left) */}
@@ -91,6 +99,7 @@ export const FinaleScreen = () => {
 
         {/* Center Main Photo (Keeps original spin/grow animation and exact look) */}
         <div
+          onAnimationEnd={handleSpinEnd}
           className={`deck-card slot-center ${
             phase === 'initial'
               ? 'anim-initial'

@@ -746,10 +746,6 @@ html, body {
   justify-content: center;
   box-sizing: border-box;
   will-change: transform, opacity, filter;
-  transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1),
-              opacity 0.45s ease,
-              filter 0.45s ease,
-              box-shadow 0.45s ease;
 }
 
 .deck-photo {
@@ -762,10 +758,17 @@ html, body {
   -webkit-user-drag: none;
 }
 
-/* Slot Center (Top layer, 100% visible, fully in focus) */
-.deck-card.slot-center {
+/* Center card when landed / ready */
+.finale-ready .deck-card {
+  transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1),
+              opacity 0.45s ease,
+              filter 0.45s ease,
+              box-shadow 0.45s ease;
+}
+
+.deck-card.slot-center.anim-landed {
   z-index: 10;
-  transform: translate(-50%, -50%) scale(1);
+  transform: translate(-50%, -50%) scale(1) rotate(0deg);
   filter: brightness(1);
   opacity: 1;
 }
@@ -817,10 +820,14 @@ html, body {
   visibility: hidden;
 }
 
+/* Side cards become visible directly in their final coordinates without jumping or shifting */
 .deck-card.slot-visible {
   opacity: 0.88;
   pointer-events: auto;
-  animation: fadeIn 0.45s ease-out;
+  transition: opacity 0.4s ease,
+              transform 0.45s cubic-bezier(0.25, 1, 0.5, 1),
+              filter 0.45s ease,
+              box-shadow 0.45s ease;
 }
 
 /* Side Tap Targets: overlaying the left and right 20% peeking areas */
