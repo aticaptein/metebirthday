@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Terminal as TerminalIcon } from 'lucide-react';
+import { Volume2 } from 'lucide-react';
 import { audioManager } from '../utils/audio';
 
-export const TerminalScreen = ({ onOpen }) => {
+export const TerminalScreen = ({ onOpen, hasShownNotice, onDismissNotice }) => {
   const terminalLines = [
     "Sistem taranıyor...",
     "Önemli bir dosya bulundu.",
@@ -14,6 +14,11 @@ export const TerminalScreen = ({ onOpen }) => {
   const [currentLineIndex, setCurrentLineIndex] = useState(0);
   const [currentCharIndex, setCurrentCharIndex] = useState(0);
   const [showButton, setShowButton] = useState(false);
+
+  // Try autoplay on mount
+  useEffect(() => {
+    audioManager.startMusic();
+  }, []);
 
   useEffect(() => {
     if (currentLineIndex < terminalLines.length) {
@@ -30,7 +35,6 @@ export const TerminalScreen = ({ onOpen }) => {
             return next;
           });
           setCurrentCharIndex(prev => prev + 1);
-          audioManager.playTypingSound();
         }, 42);
 
         return () => clearTimeout(timeout);
@@ -53,9 +57,10 @@ export const TerminalScreen = ({ onOpen }) => {
   }, [currentLineIndex, currentCharIndex]);
 
   const handleOpenClick = () => {
-    audioManager.initContext();
-    audioManager.playClick();
-    audioManager.startAmbient();
+    audioManager.startMusic();
+    if (onDismissNotice) {
+      onDismissNotice();
+    }
     onOpen();
   };
 
@@ -70,6 +75,14 @@ export const TerminalScreen = ({ onOpen }) => {
         </div>
 
         <div className="terminal-body">
+          {/* Subtle audio hint banner above logs */}
+          {!hasShownNotice && (
+            <div className="terminal-audio-notice">
+              <Volume2 size={15} className="notice-icon" />
+              <span>Sesi açmanı ve müziği dinlemeni tavsiye ederim.</span>
+            </div>
+          )}
+
           <div className="terminal-logs">
             {displayedLines.map((line, idx) => {
               const isUserLine = idx === 2;

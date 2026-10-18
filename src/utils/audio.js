@@ -1,158 +1,80 @@
-// Web Audio API Synthesizer for subtle cyberpunk interface SFX and ambient melody
+// Centralized background music manager for Sagopa Kajmer - Muamma (00:20 - 01:10 loop)
 
 class AudioManager {
   constructor() {
-    this.ctx = null;
+    this.bgAudio = null;
     this.isMuted = false;
-    this.ambientOsc1 = null;
-    this.ambientOsc2 = null;
-    this.ambientGain = null;
-    this.isPlayingAmbient = false;
+    this.hasUserStarted = false;
+    this.LOOP_START = 20.0;
+    this.LOOP_END = 70.0; // 01:10 (70 seconds)
+    this.DEFAULT_VOLUME = 0.45;
   }
 
-  initContext() {
-    if (!this.ctx) {
-      const AudioContext = window.AudioContext || window.webkitAudioContext;
-      if (AudioContext) {
-        this.ctx = new AudioContext();
+  init() {
+    if (this.bgAudio) return;
+
+    // Use Vite's BASE_URL so it works on both localhost and GitHub Pages (/metebirthday/)
+    const baseUrl = import.meta.env.BASE_URL || '/';
+    const audioSrc = `${baseUrl.endsWith('/') ? baseUrl : baseUrl + '/'}muamma.mp3`;
+
+    this.bgAudio = new Audio(audioSrc);
+    this.bgAudio.preload = 'auto';
+    this.bgAudio.volume = this.DEFAULT_VOLUME;
+    this.bgAudio.currentTime = this.LOOP_START;
+
+    // Time update listener to enforce 00:20 to 01:10 loop seamlessly
+    this.bgAudio.addEventListener('timeupdate', () => {
+      if (this.bgAudio && this.bgAudio.currentTime >= this.LOOP_END) {
+        this.bgAudio.currentTime = this.LOOP_START;
       }
+    });
+
+    // In case seeked or loop ended
+    this.bgAudio.addEventListener('ended', () => {
+      if (this.bgAudio) {
+        this.bgAudio.currentTime = this.LOOP_START;
+        this.bgAudio.play().catch(() => {});
+      }
+    });
+  }
+
+  // Attempt to play on startup or upon user interaction
+  startMusic() {
+    this.init();
+    if (!this.bgAudio) return;
+    this.hasUserStarted = true;
+
+    if (this.bgAudio.currentTime < this.LOOP_START || this.bgAudio.currentTime >= this.LOOP_END) {
+      this.bgAudio.currentTime = this.LOOP_START;
     }
-    if (this.ctx && this.ctx.state === 'suspended') {
-      this.ctx.resume();
+
+    if (!this.isMuted) {
+      this.bgAudio.play().catch(() => {
+        // Autoplay policy prevented; will play on user interaction
+      });
     }
   }
 
   toggleMute() {
+    this.init();
     this.isMuted = !this.isMuted;
-    if (this.ambientGain && this.ctx) {
-      if (this.isMuted) {
-        this.ambientGain.gain.setValueAtTime(0, this.ctx.currentTime);
-      } else {
-        this.ambientGain.gain.setValueAtTime(0.04, this.ctx.currentTime);
+    if (this.bgAudio) {
+      this.bgAudio.muted = this.isMuted;
+      if (!this.isMuted && this.bgAudio.paused) {
+        this.bgAudio.play().catch(() => {});
       }
     }
     return this.isMuted;
   }
 
-  // Soft typing beep
-  playTypingSound() {
-    if (this.isMuted) return;
-    this.initContext();
-    if (!this.ctx) return;
-
-    try {
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(800 + Math.random() * 200, this.ctx.currentTime);
-      gain.gain.setValueAtTime(0.015, this.ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 0.04);
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-      osc.start();
-      osc.stop(this.ctx.currentTime + 0.04);
-    } catch {
-      // Audio fallback silent
-    }
-  }
-
-  // Futuristic click sound
-  playClick() {
-    if (this.isMuted) return;
-    this.initContext();
-    if (!this.ctx) return;
-
-    try {
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(520, this.ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.08);
-      gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.08);
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-      osc.start();
-      osc.stop(this.ctx.currentTime + 0.08);
-    } catch {}
-  }
-
-  // Positive chime for correct answer
-  playSuccess() {
-    if (this.isMuted) return;
-    this.initContext();
-    if (!this.ctx) return;
-
-    try {
-      const now = this.ctx.currentTime;
-      const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
-      notes.forEach((freq, idx) => {
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, now + idx * 0.07);
-        gain.gain.setValueAtTime(0, now + idx * 0.07);
-        gain.gain.linearRampToValueAtTime(0.07, now + idx * 0.07 + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.07 + 0.35);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start(now + idx * 0.07);
-        osc.stop(now + idx * 0.07 + 0.35);
-      });
-    } catch {}
-  }
-
-  // Error low thud
-  playError() {
-    if (this.isMuted) return;
-    this.initContext();
-    if (!this.ctx) return;
-
-    try {
-      const now = this.ctx.currentTime;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(160, now);
-      osc.frequency.linearRampToValueAtTime(100, now + 0.22);
-      gain.gain.setValueAtTime(0.06, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-      osc.start(now);
-      osc.stop(now + 0.22);
-    } catch {}
-  }
-
-  // Grand celebration chord for finale
-  playFinaleChord() {
-    if (this.isMuted) return;
-    this.initContext();
-    if (!this.ctx) return;
-
-    try {
-      const now = this.ctx.currentTime;
-      // Synthesize celebratory sweep and chord
-      const chords = [261.63, 329.63, 392.00, 523.25, 659.25, 1046.50];
-      chords.forEach((freq) => {
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, now);
-        gain.gain.setValueAtTime(0.04, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 2.4);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start(now);
-        osc.stop(now + 2.5);
-      });
-    } catch {}
-  }
-
-  // Continuous ambient is disabled per user request
-  startAmbient() {
-    // Disabled: keeping only button interaction sounds
-  }
+  // Legacy no-op stubs to eliminate old sfx cleanly
+  initContext() {}
+  playTypingSound() {}
+  playClick() {}
+  playSuccess() {}
+  playError() {}
+  playFinaleChord() {}
+  startAmbient() {}
 }
 
 export const audioManager = new AudioManager();

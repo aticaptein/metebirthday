@@ -10,6 +10,11 @@ export function App() {
   // Stages: 'terminal' -> 'quiz' -> 'transition' -> 'surprise' -> 'finale'
   const [currentStage, setCurrentStage] = useState('terminal');
   const [isMuted, setIsMuted] = useState(false);
+  const [hasShownNotice, setHasShownNotice] = useState(false);
+
+  useEffect(() => {
+    audioManager.startMusic();
+  }, []);
 
   const toggleSound = () => {
     const muted = audioManager.toggleMute();
@@ -17,6 +22,7 @@ export function App() {
   };
 
   const handleStartQuiz = () => {
+    setHasShownNotice(true);
     setCurrentStage('quiz');
   };
 
@@ -56,7 +62,11 @@ export function App() {
 
       {/* 1. Terminal Screen */}
       {currentStage === 'terminal' && (
-        <TerminalScreen onOpen={handleStartQuiz} />
+        <TerminalScreen
+          onOpen={handleStartQuiz}
+          hasShownNotice={hasShownNotice}
+          onDismissNotice={() => setHasShownNotice(true)}
+        />
       )}
 
       {/* 2. Friendship Quiz Screen (7 questions + 1 special transition) */}
