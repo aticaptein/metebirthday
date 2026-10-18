@@ -79,7 +79,7 @@ export const TerminalScreen = ({ onOpen, hasShownNotice, onDismissNotice }) => {
           {!hasShownNotice && (
             <div className="terminal-audio-notice">
               <Volume2 size={15} className="notice-icon" />
-              <span>Sesi açmanı ve müziği dinlemeni tavsiye ederim.</span>
+              <span>Sesi açmanı ve müziği dinlemeni tavsiye ederim. (Müzik, dosyayı açınca başlayacak.)</span>
             </div>
           )}
 

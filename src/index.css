@@ -701,7 +701,7 @@ html, body {
 }
 
 /* =========================================
-   5. PHOTO FINALE SCREEN & 3-PHOTO GALLERY
+   5. PHOTO FINALE SCREEN & 3-PHOTO DECK GALLERY
    ========================================= */
 .finale-container {
   width: 100%;
@@ -711,128 +711,125 @@ html, body {
   align-items: center;
   justify-content: center;
   position: relative;
-  padding: 16px 12px;
+  padding: 12px 8px;
   gap: 16px;
   overflow: hidden;
 }
 
-/* Gallery Stage holds the 3 overlapping photos */
-.gallery-stage {
+/* Gallery Deck Container: centers the 3 stacked cards */
+.gallery-deck-container {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  max-width: 500px;
-  height: 58dvh;
+  width: 90vw;
+  max-width: 440px;
+  height: 52dvh;
+  max-height: 480px;
 }
 
-/* Photo Slot base positioning */
-.photo-slot {
+/* Deck Card base styling: centered with position absolute */
+.deck-card {
   position: absolute;
   top: 50%;
   left: 50%;
+  height: 100%;
+  width: auto;
+  aspect-ratio: 3 / 4;
+  max-width: 72vw;
+  border-radius: 18px;
+  padding: 6px;
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.4) 0%, rgba(147, 51, 234, 0.5) 50%, rgba(0, 240, 255, 0.2) 100%);
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.6), 0 0 35px rgba(147, 51, 234, 0.35), 0 0 60px rgba(0, 240, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  will-change: transform, opacity, filter;
   transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1),
               opacity 0.45s ease,
               filter 0.45s ease,
               box-shadow 0.45s ease;
-  will-change: transform, opacity;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-.photo-card {
-  position: relative;
-  border-radius: 18px;
-  padding: 6px;
-  background: linear-gradient(135deg, rgba(0, 240, 255, 0.4) 0%, rgba(147, 51, 234, 0.5) 50%, rgba(0, 240, 255, 0.2) 100%);
-  box-shadow: 0 0 35px rgba(147, 51, 234, 0.35), 0 0 60px rgba(0, 240, 255, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.card-center {
-  max-height: 56dvh;
-}
-
-.card-side {
-  max-height: 48dvh;
-  cursor: pointer;
-}
-
-.finale-photo {
-  max-width: 100%;
-  max-height: calc(56dvh - 12px);
-  width: auto;
-  height: auto;
-  object-fit: contain;
-  border-radius: 14px;
+.deck-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 13px;
   display: block;
   user-select: none;
   -webkit-user-drag: none;
 }
 
-.card-side .finale-photo {
-  max-height: calc(48dvh - 12px);
-}
-
-/* Slot Center (Top layer, 100% visible) */
-.slot-center {
+/* Slot Center (Top layer, 100% visible, fully in focus) */
+.deck-card.slot-center {
   z-index: 10;
   transform: translate(-50%, -50%) scale(1);
+  filter: brightness(1);
+  opacity: 1;
 }
 
-/* Slot Left: behind, ~20% visible peeking out from left */
-.slot-left {
+/* 
+  Mathematical placement rule:
+  Both center and side cards have the same width W.
+  Center card is at translate(-50%, -50%), so its left edge is Center - W/2 and right edge is Center + W/2.
+  For the left card to peek by exactly 20% of its width (0.20 * W) from the center card's left edge:
+  Left card's left edge must be at Center - W/2 - 0.20 * W = Center - 0.70 * W.
+  Since its origin is at Center, translate(-70%, -50%) places its left edge at Center - 0.70 * W,
+  meaning exactly 20% peeks out on the left and 80% is hidden under the center card!
+  
+  Symmetrically, for the right card:
+  Right card's right edge must be at Center + W/2 + 0.20 * W = Center + 0.70 * W.
+  With translate(-30%, -50%), its center is at Center + 0.20 * W, so its right edge is at Center + 0.70 * W.
+  Exactly 20% peeks out on the right!
+*/
+.deck-card.slot-left {
   z-index: 5;
   cursor: pointer;
-  transform: translate(-105%, -50%) scale(0.86);
-  opacity: 0.82;
+  transform: translate(-70%, -50%) scale(0.96);
   filter: brightness(0.72);
+  opacity: 0.88;
 }
 
-.slot-left:hover {
-  filter: brightness(0.9);
-  opacity: 0.95;
+.deck-card.slot-left:hover {
+  filter: brightness(0.88);
+  opacity: 0.98;
 }
 
-/* Slot Right: behind, ~20% visible peeking out from right */
-.slot-right {
+.deck-card.slot-right {
   z-index: 5;
   cursor: pointer;
-  transform: translate(5%, -50%) scale(0.86);
-  opacity: 0.82;
+  transform: translate(-30%, -50%) scale(0.96);
   filter: brightness(0.72);
+  opacity: 0.88;
 }
 
-.slot-right:hover {
-  filter: brightness(0.9);
-  opacity: 0.95;
+.deck-card.slot-right:hover {
+  filter: brightness(0.88);
+  opacity: 0.98;
 }
 
-/* Hidden state until center lands */
-.slot-hidden {
+/* Hidden state until center finishes landing animation */
+.deck-card.slot-hidden {
   opacity: 0;
   pointer-events: none;
   visibility: hidden;
 }
 
-.slot-visible {
-  opacity: 0.82;
+.deck-card.slot-visible {
+  opacity: 0.88;
   pointer-events: auto;
-  animation: fadeIn 0.5s ease-out;
+  animation: fadeIn 0.45s ease-out;
 }
 
-/* Generous touch targets for mobile sides */
+/* Side Tap Targets: overlaying the left and right 20% peeking areas */
 .side-tap-target {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 25%;
-  height: 85%;
+  width: 28%;
+  height: 94%;
   background: transparent;
   border: none;
   cursor: pointer;
@@ -848,35 +845,41 @@ html, body {
   right: 0;
 }
 
-/* Responsive adjustment for small phones */
-@media (max-width: 480px) {
-  .slot-left {
-    transform: translate(-112%, -50%) scale(0.84);
-  }
-  .slot-right {
-    transform: translate(12%, -50%) scale(0.84);
-  }
-}
-
+/* Title container: neatly separated below gallery, ensuring no overlap */
 .finale-title-container {
   width: 100%;
+  max-width: 520px;
   text-align: center;
-  padding: 4px 10px;
+  padding: 6px 12px;
   z-index: 15;
+  margin-top: 4px;
 }
 
 .finale-title {
-  font-size: clamp(20px, 5.5vw, 28px);
+  font-size: clamp(19px, 5.2vw, 26px);
   font-weight: 900;
-  line-height: 1.3;
+  line-height: 1.35;
   color: #ffffff;
   text-shadow: 0 0 20px rgba(0, 240, 255, 0.6), 0 0 35px rgba(147, 51, 234, 0.5);
   letter-spacing: 0.5px;
 }
 
+/* Responsive adjustments for phones: maintain tight deck cluster with 20% visible sides */
+@media (max-width: 480px) {
+  .gallery-deck-container {
+    height: 48dvh;
+  }
+  .deck-card.slot-left {
+    transform: translate(-70%, -50%) scale(0.95);
+  }
+  .deck-card.slot-right {
+    transform: translate(-30%, -50%) scale(0.95);
+  }
+}
+
 /* Dynamic Animation Classes for Finale Sequence */
 .anim-initial {
-  transform: scale(0.05) rotate(0deg);
+  transform: translate(-50%, -50%) scale(0.05) rotate(0deg);
   opacity: 0;
 }
 
@@ -884,8 +887,8 @@ html, body {
   animation: spinAndGrow 2.8s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
 }
 
-.anim-landed {
-  transform: scale(1) rotate(0deg);
+.deck-card.slot-center.anim-landed {
+  transform: translate(-50%, -50%) scale(1) rotate(0deg);
   opacity: 1;
 }
 
@@ -921,17 +924,17 @@ html, body {
 
 @keyframes spinAndGrow {
   0% {
-    transform: scale(0.05) rotate(0deg);
+    transform: translate(-50%, -50%) scale(0.05) rotate(0deg);
     opacity: 0.3;
   }
   30% {
     opacity: 1;
   }
   85% {
-    transform: scale(1.08) rotate(1080deg);
+    transform: translate(-50%, -50%) scale(1.08) rotate(1080deg);
   }
   100% {
-    transform: scale(1) rotate(1080deg);
+    transform: translate(-50%, -50%) scale(1) rotate(1080deg);
     opacity: 1;
   }
 }

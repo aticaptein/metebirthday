@@ -11,8 +11,8 @@ export const FinaleScreen = () => {
   const [phase, setPhase] = useState('initial');
   const [burstGlow, setBurstGlow] = useState(false);
 
-  // Gallery order state: activeIndex 0 = metehan, 1 = mangal, 2 = sigara
-  // Default: Center = metehan (id: 'center'), Left = mangal (id: 'left'), Right = sigara (id: 'right')
+  // Gallery order state
+  // Default: Center = metehan, Left = mangal, Right = sigara
   const [slots, setSlots] = useState({
     left: 'mangal',
     center: 'metehan',
@@ -50,7 +50,7 @@ export const FinaleScreen = () => {
     };
   }, []);
 
-  // When left photo is clicked, it swaps to center, current center moves to left or right
+  // When left photo is clicked, it swaps to center, previous center moves to right/left
   const handleLeftClick = () => {
     if (phase !== 'landed') return;
     setSlots(prev => ({
@@ -72,28 +72,26 @@ export const FinaleScreen = () => {
 
   return (
     <div className="finale-container">
-      {/* 3-Photo Gallery Container */}
-      <div className="gallery-stage">
-        {/* Left Photo (behind, 20% visible, 80% hidden behind center) */}
+      {/* 3-Photo Compact Deck Gallery Container */}
+      <div className="gallery-deck-container">
+        {/* Left Photo (behind, exactly 20% visible peeking from left) */}
         <div
-          className={`photo-slot slot-left ${phase === 'landed' ? 'slot-visible' : 'slot-hidden'}`}
+          className={`deck-card slot-left ${phase === 'landed' ? 'slot-visible' : 'slot-hidden'}`}
           onClick={handleLeftClick}
           role="button"
           tabIndex={0}
-          aria-label="Önceki Fotoğrafı Göster"
+          aria-label="Soldaki Fotoğrafı Büyüt"
         >
-          <div className="photo-card card-side">
-            <img
-              src={photoMap[slots.left].src}
-              alt={photoMap[slots.left].alt}
-              className="finale-photo"
-            />
-          </div>
+          <img
+            src={photoMap[slots.left].src}
+            alt={photoMap[slots.left].alt}
+            className="deck-photo"
+          />
         </div>
 
         {/* Center Main Photo (Keeps original spin/grow animation and exact look) */}
         <div
-          className={`photo-slot slot-center ${
+          className={`deck-card slot-center ${
             phase === 'initial'
               ? 'anim-initial'
               : phase === 'spinning'
@@ -101,33 +99,29 @@ export const FinaleScreen = () => {
               : 'anim-landed'
           } ${burstGlow ? 'glow-burst' : ''}`}
         >
-          <div className="photo-card card-center">
-            <img
-              src={photoMap[slots.center].src}
-              alt={photoMap[slots.center].alt}
-              className="finale-photo"
-            />
-          </div>
+          <img
+            src={photoMap[slots.center].src}
+            alt={photoMap[slots.center].alt}
+            className="deck-photo"
+          />
         </div>
 
-        {/* Right Photo (behind, 20% visible, 80% hidden behind center) */}
+        {/* Right Photo (behind, exactly 20% visible peeking from right) */}
         <div
-          className={`photo-slot slot-right ${phase === 'landed' ? 'slot-visible' : 'slot-hidden'}`}
+          className={`deck-card slot-right ${phase === 'landed' ? 'slot-visible' : 'slot-hidden'}`}
           onClick={handleRightClick}
           role="button"
           tabIndex={0}
-          aria-label="Sonraki Fotoğrafı Göster"
+          aria-label="Sağdaki Fotoğrafı Büyüt"
         >
-          <div className="photo-card card-side">
-            <img
-              src={photoMap[slots.right].src}
-              alt={photoMap[slots.right].alt}
-              className="finale-photo"
-            />
-          </div>
+          <img
+            src={photoMap[slots.right].src}
+            alt={photoMap[slots.right].alt}
+            className="deck-photo"
+          />
         </div>
 
-        {/* Side Click Targets positioned over the 20% visible wings */}
+        {/* Side Tap Targets overlaying the 20% visible wings */}
         {phase === 'landed' && (
           <>
             <button
@@ -146,7 +140,7 @@ export const FinaleScreen = () => {
         )}
       </div>
 
-      {/* Birthday text appears when landed and remains fixed */}
+      {/* Birthday text appears when landed and stays neatly separated below */}
       {phase === 'landed' && (
         <div className="finale-title-container" style={{ animation: 'fadeIn 0.6s ease-out' }}>
           <h1 className="finale-title">
